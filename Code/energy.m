@@ -10,7 +10,6 @@ error_prediccion = demanda-predicciones_demanda
 error_produccion = produccion_total-demanda
 prediccion_precio=data(:,19)
 precio= data(:,(20))
-
 %%
 %organizar datos (datos mensuales)
 data=energia_produccion_fin_mes;
@@ -22,13 +21,12 @@ for i=1:14
 end
 demanda=data(:,15);
 precio=data(:,16);
-
 %%
 %organizar datos (datos diarios)
-data2=[carta2 carta1 carta3]
-produccion_total=carta2
-demanda= carta1
-precio=carta3
+data2=[carta2 carta1 carta3];
+produccion_total=carta2;
+demanda= carta1;
+precio=carta3;
 %%
 %graficos
 hist(predicciones_demanda)
@@ -36,32 +34,23 @@ plot(predicciones_demanda)
 hold on
 plot(demanda)
 hold off
-
 plot(produccion_total)
 hold on
 plot(demanda)
 hold off
 plot(error_produccion)
 media = yline(mean(error_produccion))
-
 plot(error_prediccion)
-
 %%
-
 hist(produccion_total)
 title("Histogram for energy generation")
-
 %%
 plot(precio,'r') %Aquí usar el dataset por meses
 title ("Historical daily energy price")
-
-
-
 %%
 %Identification of distribution
 qqplot(produccion_total)
 title("QQ Plot of energy generation versus Standard Normal")
-
 %%
 %Ventanas de volatilidad
 data=produccion_total %esto se cambia según lo que se quiere ver
@@ -72,15 +61,12 @@ for j=1:l-v
     dataj=data(j:j+v-1);
     d(j)=std(dataj);
 end
-
 subplot(2,1,1)
 plot(d)
 title("Window volatility for energy generation")
-
 %%
 %métricas( entre dos datos)
 %distancia de mahalanobis
-
 X=[demanda produccion_total]%esto se cambia según lo que se quiere ver
 [ nf nc ]=size(X)
 media=mean(X)
@@ -89,14 +75,11 @@ for j=1:nf
 end
 I1=prctile(d,90)
 I2=find(d>=I1) %las coordenadas de las 10 peores distancias.
-
 plot(X(:,1),X(:,2),'o')
 title("Mahalanobis distance to the mean of energy demand versus energy generation")
 hold on
 plot(X(I2,1),X(I2,2),'or')
-
 legend("Nonoutliers","Outliers")
-
 %%
 %copula
 X=demanda
@@ -131,7 +114,6 @@ for i=1:lz
     I=[];
 end
 Zc=fhatz;
-
 la=length(A)
 for i=1:la
     for j=1:la
@@ -145,8 +127,6 @@ plot(Ac,Yc,'o') %copula
 %plot3(Xc,Yc,Zc,'o') %copula entre 3
 title("Copula of energy price versus energy price prediction")
 %%
-
-
 %%
 %indice explicativo de una variable en terminos de las otras
 C=robustcov([produccion_total weather])
@@ -159,7 +139,6 @@ R2=1-1./(d1.*d2) %porcentaje explicado de la variable en terminos de las otras
 %EnergyDemandPrediction=R2(2)
 %EnergyPrice=R2(3)
 %T=table(Table, TotalEnergyGeneration, EnergyDemandPrediction)
-
 %%
 %proyeccion
 C=cov(data);
@@ -168,26 +147,28 @@ valor=diag(valor);
 vectormax=vector(:,end);
 pro=data*vectormax
 varpro=var(pro)
-
 %%
-
 [nf nc]=size(data);
-
 for j=1:nc
-
     for i=1:nc
-
         rho1=corr(data(:,i),data(:,j),'type','spearman');
-
         rho2=rho1;
-
         cov1(i,j)=rho2*mad(data(:,i))*mad(data(:,j)); %mad es desviacion robusta
-
     end
-
 end
-
 cov1
 
 
+%%
+%peaks over threshold (POT) Analisis de picos
+X=demanda
+Threshold= prctile(X,90)
 
+findpeaks(X,'MinPeakHeight',Threshold)
+hold on
+plot(1:1)
+h = yline(Threshold, 'r--', 'LineWidth',2);
+legend("Energy Demand","Outliers","","Threshold (percentile 90)")
+title("Peaks over Threshold for Energy Demand")
+xlabel("Time")
+ylabel("Energy Demand")
