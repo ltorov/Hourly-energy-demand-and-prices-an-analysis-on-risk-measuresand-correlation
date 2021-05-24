@@ -172,3 +172,22 @@ legend("Energy Demand","Outliers","","Threshold (percentile 90)")
 title("Peaks over Threshold for Energy Demand")
 xlabel("Time")
 ylabel("Energy Demand")
+
+%%
+%Autocorrelation function ACF
+%autocorr(produccion_total) %autocorrelacion simple
+%title("Simple Autocorrelation Function for Energy Generation")
+
+parcorr(demanda) %autocorrelacion parcial
+title("Partial Autocorrelation Function for Energy Demand")
+ylabel("Energy Demand")
+
+%%
+%Exponential smoothing
+smooth = smoothdata(produccion_total)
+plot(smooth)
+hold on
+plot(produccion_total)
+legend("Smoothed Energy Generation","Original Energy Generation")
+title("Exponential smoothing for Energy Generation")
+xlabel("Time")
