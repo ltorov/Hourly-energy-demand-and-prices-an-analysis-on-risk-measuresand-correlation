@@ -64,22 +64,32 @@ end
 subplot(2,1,1)
 plot(d)
 title("Window volatility for energy generation")
+
 %%
-%métricas( entre dos datos)
-%distancia de mahalanobis
-X=[demanda produccion_total]%esto se cambia según lo que se quiere ver
-[ nf nc ]=size(X)
-media=mean(X)
-for j=1:nf
-    d(j)=norm(X(j,:)-media,2); %distancia del jésimo a la media
-end
+%hallar distancias de mahalanobis
+%X=[demanda produccion_total]
+X=[produccion_total precio]
+
+d=mahal(X,X)
+%para encontrar que datos recortar
 I1=prctile(d,90)
-I2=find(d>=I1) %las coordenadas de las 10 peores distancias.
-plot(X(:,1),X(:,2),'o')
-title("Mahalanobis distance to the mean of energy demand versus energy generation")
+I2=find(d<=I1)
+%datos recortados
+newX=X(I2,:)
+%Hallar R^2 con datos recortados según mahalanobis
+C=cov(newX)
+CI=inv(C)
+d1=diag(C)
+d2=diag(CI)
+R2mahalanobis=1-1./(d1.*d2)
+
+plot(X(:,1),X(:,2),'or')
 hold on
-plot(X(I2,1),X(I2,2),'or')
-legend("Nonoutliers","Outliers")
+plot(X(I2,1),X(I2,2),'ob')
+legend("Outliers","Nonoutliers")
+xlabel("Daily Energy Generation")
+ylabel("Daily Energy Price")
+title("Mahalanobis distance to the mean of daily energy generation versus price")
 %%
 %copula
 X=demanda
@@ -191,3 +201,17 @@ plot(produccion_total)
 legend("Smoothed Energy Generation","Original Energy Generation")
 title("Exponential smoothing for Energy Generation")
 xlabel("Time")
+
+%%
+%Extreme Value Distribution 
+X=demanda
+blocksize = 1000;
+nblocks = size(X);
+rng default  % For reproducibility
+t = X;
+x = max(t); % 250 column maxima
+paramEsts = gevfit(x)
+histogram(x,2:20,'FaceColor',[.8 .8 1]);
+xgrid = linspace(2,20,1000);
+line(xgrid,nblocks*...
+     gevpdf(xgrid,paramEsts(1),paramEsts(2),paramEsts(3)));
